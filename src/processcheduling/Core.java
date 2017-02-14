@@ -7,6 +7,7 @@ import java.util.LinkedList;
  * @author Ian Fennen
  */
 public class Core {
+    
     public final int timeSlice;
     private int sliceRemaining;
     private boolean available;
@@ -15,7 +16,6 @@ public class Core {
     public Core(int ts){
         timeSlice = ts;
     }
-    
     public int getTimeSlice() {
         return timeSlice;
     }

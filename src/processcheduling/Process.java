@@ -25,6 +25,15 @@ public class Process {
         startTime = st;
         tasks = new LinkedList();
     }
+    
+    public void addTask(Task t){
+        tasks.add(t);
+    }
+    
+    public int getStartTime(){
+        return startTime;
+    }
+    
     /**
      * Will update the current {@code Task}.
      * @return True if {@code Process} is complete; False if the {@code Task}s are not complete.
@@ -64,9 +73,12 @@ public class Process {
                 }
                break;
             default:
-                //do nothing.
+                //Waiting in a queue. Do nothing.
                break;
         }
         return false;
+    }
+    public String toString(){
+        return ""+tasks.size();
     }
 }
