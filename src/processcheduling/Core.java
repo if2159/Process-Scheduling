@@ -34,13 +34,14 @@ public class Core {
     
     public void setCurrentProcess(Process p){
         currentProcess = p;
+        sliceRemaining = timeSlice;
     }
     
     public boolean update(){
         if(currentProcess != null && sliceRemaining > 0){
             available = false;
             if(currentProcess.update()){
-                currentProcess = null;
+                return true;
             }
             sliceRemaining--;
             return false;

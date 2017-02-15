@@ -15,36 +15,31 @@ import java.util.Scanner;
 public class ProcesScheduling {
 
     private static Core []coreArray;
+    private static Disk disk;
     private static LinkedList<Process> readyQueue;
+    private static LinkedList<Process> diskQueue;
+    private static ArrayList<Process>  displayList;
     private static ArrayList<Process> waitingList;
     private static int tick = 0;
     private static int workingTasks = 0;
+    
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         readyQueue = new LinkedList();
+        diskQueue  = new LinkedList();
         waitingList = new ArrayList();
-
+        displayList = new ArrayList();
         try{
             readFile();
         }
         catch(FileNotFoundException e){
             out.println("File  Not Found.");
         }
-        while(workingTasks > 0 && !waitingList.isEmpty()){
-            for(Process p: waitingList){
-                if(p.getStartTime() <= tick){
-                    switch(p.nextTask().)
-                    readyQueue.add(p);
-                }
-            }
-            
-            for(Core c: coreArray){
-                if(c.update()){
-                    c.setCurrentProcess(readyQueue.pop());
-                }
-            }
+        out.println("*************START*************");
+        while(workingTasks > 0 || !waitingList.isEmpty()){
+            update();
             
             
             
@@ -52,12 +47,55 @@ public class ProcesScheduling {
         }
         
     }
+    
+    
+    private static void update(){
+        for (int i = 0; i < waitingList.size(); i++) {
+            Process p = waitingList.get(i);
+            //out.println(p);
+            if (p.getStartTime() <= tick) {
+                switch (p.getNextTask().getType()) {
+                    case CORE:
+                        out.println("CORE");
+                        readyQueue.add(p);
+                        break;
+                    case DISK:
+                        out.println("DISK");
+                        diskQueue.add(p);
+                        break;
+                    case DISPLAY:
+                    case INPUT:
+                        out.println("INPUT");
+                        displayList.add(p);
+                        break;
+
+                }
+                waitingList.remove(p);
+                workingTasks++;
+            }
+        }
+        disk.update();
+        //TODO currently is off by one for ticks. Uses entire slice rather than just needed part.
+        for (Core c : coreArray) {
+            if (c.update()) {
+                if(c.getCurrentProcess() != null){
+                    waitingList.add(c.getCurrentProcess());
+                }
+                if(!readyQueue.isEmpty()){
+                    c.setCurrentProcess(readyQueue.pop());
+                }
+                out.println("time up");
+            }
+        }
+        out.println(tick);
+        
+    }
 
     private static void readFile() throws FileNotFoundException{
         out.println("Number:");
-        byte selection = (new Scanner(System.in)).nextByte();
+        //byte selection = (new Scanner(System.in)).nextByte();
         Scanner fileIn;
-        switch(selection){
+        /*switch(selection){
             case 0:
                 fileIn = new Scanner(new File("input10.txt"));
                 break;
@@ -66,8 +104,9 @@ public class ProcesScheduling {
                 break;
             default:
                 throw new FileNotFoundException("File number " + selection + " not found");
-        }
-        
+        }*/
+        fileIn = new Scanner(new File("input10.txt"));
+        disk = new Disk();
         while(fileIn.hasNext()){
             String s = fileIn.next();
             int n    = fileIn.nextInt();
@@ -76,6 +115,7 @@ public class ProcesScheduling {
     }
     
     private static void handleInput(String s, int n){
+        out.println("new INPUT: " + s + " " + n);
         switch(s){
             case "NCORES":
                 coreArray = new Core[n];
@@ -86,6 +126,7 @@ public class ProcesScheduling {
                 }
                 break;
             case "NEW":
+                out.println("NEW" + n);
                 Process p = new Process(n);
                 waitingList.add(p);
                 break;

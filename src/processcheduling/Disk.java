@@ -29,6 +29,7 @@ public class Disk {
     
     public void setCurrentProcess(Process p){
         currentProcess = p;
+        timeRemaining = p.getNextTask().getTimeLeft();
     }
     
     public boolean update(){

@@ -18,6 +18,10 @@ public class Task {
         return type;
     }
     
+    public int getTimeLeft(){
+        return timeLeft;
+    }
+    
     /**
      * Will subtract one tick from the time left and will
      * return true if the Task is complete.

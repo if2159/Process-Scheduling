@@ -34,6 +34,10 @@ public class Process {
         return startTime;
     }
     
+    public Task getNextTask(){
+        return tasks.getFirst();
+    }
+    
     /**
      * Will update the current {@code Task}.
      * @return True if {@code Process} is complete; False if the {@code Task}s are not complete.
@@ -79,6 +83,6 @@ public class Process {
         return false;
     }
     public String toString(){
-        return ""+tasks.size();
+        return "From Process "+tasks.size();
     }
 }
