@@ -34,9 +34,11 @@ public class Core {
     }
     
     public void setCurrentProcess(Process p){
-        available = false;
         currentProcess = p;
-        sliceRemaining = timeSlice;
+        if(p != null){
+            available = false;
+            sliceRemaining = timeSlice;
+        }
     }
     
     public Process update(){

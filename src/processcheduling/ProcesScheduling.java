@@ -22,7 +22,7 @@ public class ProcesScheduling {
     private static ArrayList<Process>  displayList;
     private static ArrayList<Process> waitingList;
     private static int tick = 0;
-    private static int workingTasks = 0;
+    private static int workingTasks = 1;
     private static int currentPID = 0;
     /**
      * @param args the command line arguments
@@ -76,6 +76,7 @@ public class ProcesScheduling {
                             break;
 
                     }
+                    i--;
                     waitingList.remove(p);
                     workingTasks++;
                 }
@@ -91,6 +92,7 @@ public class ProcesScheduling {
             Process p = diskQueue.pop();
             p.setLocation(ProcessLocation.DISK);
             disk.setCurrentProcess(p);
+            
         }
         else{
             Process p = disk.update();
@@ -110,13 +112,16 @@ public class ProcesScheduling {
                 displayList.remove(p);
                 waitingList.add(p);
                 workingTasks--;
+                i--;
             }
+            
         }
         //CORE
         for (Core c : coreArray) {
             Process p = c.update();
             if(p != null){
                 p.setLocation(ProcessLocation.WAITING);
+                c.setCurrentProcess(null);
                 out.println("CORE completion for process: " + p.PID + " at time: " + tick);
                 waitingList.add(p);
                 workingTasks--;
@@ -133,13 +138,14 @@ public class ProcesScheduling {
         for(Core c: coreArray){
             if(c.isAvailable() && !readyQueue.isEmpty()){
                 Process p = readyQueue.pop();
+                out.println("Process " + p.PID + " got CORE at: " + tick);
                 p.setLocation(ProcessLocation.CORE);
                 c.setCurrentProcess(p);
             }
         }
         
     }
-
+//TODO Something is causing a blocked state or the processes in a core are set to waiting state. Unsure of whats happening
     private static void readFile() throws FileNotFoundException{
         out.println("Number:");
         //byte selection = (new Scanner(System.in)).nextByte();
@@ -154,7 +160,7 @@ public class ProcesScheduling {
             default:
                 throw new FileNotFoundException("File number " + selection + " not found");
         }*/
-        fileIn = new Scanner(new File("input10.txt"));
+        fileIn = new Scanner(new File("input11.txt"));
         disk = new Disk();
         while(fileIn.hasNext()){
             String s = fileIn.next();
@@ -199,6 +205,7 @@ public class ProcesScheduling {
     }
 
     private static void terminateProcess(Process p) {
+        out.println("\n\n");
         out.println("CURRENT STATE OF THE SYSTEM AT t = " + tick + " ms:");
         int busyCores = 0;
         for(Core c: coreArray){
@@ -213,10 +220,11 @@ public class ProcesScheduling {
             readyQueueEmpty = false;
             out.println("Process: " + pr.PID);
         }
-        out.println("DISK QUEUE:");
         if(readyQueueEmpty){
             out.println("Empty");
         }
+        
+        out.println("DISK QUEUE:");
         boolean diskQueueEmpty = true;
         for(Process pr: diskQueue){
             diskQueueEmpty = false;
@@ -232,7 +240,22 @@ public class ProcesScheduling {
                 out.println("TERMINATED");
             }
             else{
-                out.println("RUNNING");
+                switch(pr.getLocation()){
+                    case CORE:
+                        out.println("RUNNING");
+                        break;
+                    case DISK:
+                        out.println("BLOCKED");
+                        break;
+                    case DISPLAY:
+                        out.println("BLOCKED");
+                        break;
+                    case DISK_QUEUE:
+                    case READY_QUEUE:
+                    case WAITING:
+                        out.println("READY");
+                    break;
+                }
             }
         }
         out.println("\n\n\n\n");

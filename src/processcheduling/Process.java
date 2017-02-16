@@ -51,6 +51,10 @@ public class Process {
         location = pl;
     }
     
+    public ProcessLocation getLocation(){
+        return location;
+    }
+    
     /**
      * Will update the current {@code Task}.
      * @return True if {@code Process} is complete; False if the {@code Task}s are not complete.
