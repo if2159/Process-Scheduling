@@ -15,6 +15,7 @@ public class Core {
 
     public Core(int ts){
         timeSlice = ts;
+        available = true;
     }
     public int getTimeSlice() {
         return timeSlice;
@@ -33,20 +34,23 @@ public class Core {
     }
     
     public void setCurrentProcess(Process p){
+        available = false;
         currentProcess = p;
         sliceRemaining = timeSlice;
     }
     
-    public boolean update(){
+    public Process update(){
         if(currentProcess != null && sliceRemaining > 0){
             available = false;
             if(currentProcess.update()){
-                return true;
+                available = true;
+                //System.out.println("CORE RELEASED EARLY");
+                return currentProcess;
             }
             sliceRemaining--;
-            return false;
+            return null;
         }
         available = true;
-        return true;
+        return currentProcess;
     }
 }

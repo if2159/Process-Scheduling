@@ -14,20 +14,26 @@ public class Process {
     /**
      * The list of {@code Task}s left for the {@code Process} to complete.
      */
-    LinkedList<Task> tasks = null;
+    private LinkedList<Task> tasks = null;
+    
+    public final int PID;
+    
     
     /**
      * This is where the process currently is. Used for update Method.
      */
-    ProcessLocation location;
+    private ProcessLocation location;
     
-    public Process(int st){
+    public Process(int st, int pid){
         startTime = st;
+        PID = pid;
         tasks = new LinkedList();
     }
     
     public void addTask(Task t){
-        tasks.add(t);
+        if(!(t.getType() == TaskType.DISK && t.getTimeLeft() == 0)){
+            tasks.add(t);
+        }
     }
     
     public int getStartTime(){
@@ -35,7 +41,14 @@ public class Process {
     }
     
     public Task getNextTask(){
-        return tasks.getFirst();
+        if(!tasks.isEmpty()){
+            return tasks.getFirst();
+        }
+        return null;
+    }
+    
+    public void setLocation(ProcessLocation pl){
+        location = pl;
     }
     
     /**
@@ -51,7 +64,12 @@ public class Process {
             case CORE:
                 if(location == ProcessLocation.CORE){
                     if(currentTask.update()){
+                        
                         tasks.remove();
+                        return true;
+                    }
+                    else{
+                        //System.out.println("CORE UPDATE: " + currentTask.getTimeLeft());
                     }
                 }
                break;
@@ -59,6 +77,7 @@ public class Process {
                 if (location == ProcessLocation.DISK) {
                     if (currentTask.update()) {
                         tasks.remove();
+                        return true;
                     }
                 }
                break;
@@ -66,6 +85,7 @@ public class Process {
                 if(location == ProcessLocation.DISPLAY){
                     if(currentTask.update()){
                         tasks.remove();
+                        return true;
                     }
                 }
                break;
@@ -73,6 +93,7 @@ public class Process {
                 if (location == ProcessLocation.DISPLAY) {
                     if (currentTask.update()) {
                         tasks.remove();
+                        return true;
                     }
                 }
                break;
@@ -83,6 +104,6 @@ public class Process {
         return false;
     }
     public String toString(){
-        return "From Process "+tasks.size();
+        return "From Process PID = " + PID +"\n\tTasks:"+tasks.size();
     }
 }

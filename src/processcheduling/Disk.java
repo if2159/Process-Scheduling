@@ -13,6 +13,9 @@ public class Disk {
     private Process currentProcess;
 
     public Disk(){
+        timeRemaining = 0;
+        available = true;
+        
     }
 
     public int getTimeRemaining() {
@@ -32,16 +35,21 @@ public class Disk {
         timeRemaining = p.getNextTask().getTimeLeft();
     }
     
-    public boolean update(){
-        if(currentProcess != null && timeRemaining > 0){
+    public Process update(){
+        if(currentProcess != null){
             available = false;
             if(currentProcess.update()){
+                available = true; 
+                Process p = currentProcess;
                 currentProcess = null;
+                return p;
             }
             timeRemaining--;
-            return false;
+            return null;
         }
+        Process p = currentProcess;
         available = true;
-        return true;
+        currentProcess = null;
+        return p;
     }
 }
