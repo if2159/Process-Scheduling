@@ -15,6 +15,7 @@ import java.util.Scanner;
 public class ProcesScheduling {
 
     private static Core []coreArray;
+    private static ArrayList<Process> processList;
     private static Disk disk;
     private static LinkedList<Process> readyQueue;
     private static LinkedList<Process> diskQueue;
@@ -22,7 +23,7 @@ public class ProcesScheduling {
     private static ArrayList<Process> waitingList;
     private static int tick = 0;
     private static int workingTasks = 0;
-    
+    private static int currentPID = 0;
     /**
      * @param args the command line arguments
      */
@@ -31,6 +32,7 @@ public class ProcesScheduling {
         diskQueue  = new LinkedList();
         waitingList = new ArrayList();
         displayList = new ArrayList();
+        processList = new ArrayList();
         try{
             readFile();
         }
@@ -50,44 +52,91 @@ public class ProcesScheduling {
     
     
     private static void update(){
-        for (int i = 0; i < waitingList.size(); i++) {
+        for (int i = 0; i < waitingList.size(); i++){
             Process p = waitingList.get(i);
             //out.println(p);
             if (p.getStartTime() <= tick) {
-                switch (p.getNextTask().getType()) {
-                    case CORE:
-                        out.println("CORE");
-                        readyQueue.add(p);
-                        break;
-                    case DISK:
-                        out.println("DISK");
-                        diskQueue.add(p);
-                        break;
-                    case DISPLAY:
-                    case INPUT:
-                        out.println("INPUT");
-                        displayList.add(p);
-                        break;
+                if(p.getNextTask() != null){
+                    //out.println("TICK: " + tick);
+                    switch (p.getNextTask().getType()) {
+                        case CORE:
+                            //out.println("CORE PID:" + p.PID);
+                            readyQueue.add(p);
+                            break;
+                        case DISK:
+                            //out.println("DISK PID:" + p.PID);
+                            diskQueue.add(p);
+                            break;
+                        case DISPLAY:
+                        case INPUT:
+                            //out.println("INPUT PID:" + p.PID);
+                            out.println("BEGIN DISPLAY for PID: " + p.PID + "at TIME: " + tick);
+                            p.setLocation(ProcessLocation.DISPLAY);
+                            displayList.add(p);
+                            break;
 
+                    }
+                    waitingList.remove(p);
+                    workingTasks++;
                 }
-                waitingList.remove(p);
-                workingTasks++;
+                else{
+                    waitingList.remove(p);
+                    terminateProcess(p);
+                    workingTasks--;
+                }
             }
         }
-        disk.update();
-        //TODO currently is off by one for ticks. Uses entire slice rather than just needed part.
+        //DISK
+        if(disk.isAvailable() && !diskQueue.isEmpty()){
+            Process p = diskQueue.pop();
+            p.setLocation(ProcessLocation.DISK);
+            disk.setCurrentProcess(p);
+        }
+        else{
+            Process p = disk.update();
+            if(p != null){
+                p.setLocation(ProcessLocation.WAITING);
+                out.println("DISK completion for process: " + p.PID + " at time: " + tick);
+                waitingList.add(p);
+                workingTasks--;
+            }
+        }
+        
+        //DISPLAY
+        for(int i = 0; i < displayList.size(); i++){
+            Process p = displayList.get(i);
+            if(p.update()){
+                out.println("DISPLAY completion for process: " + p.PID + " at time: " + tick);
+                displayList.remove(p);
+                waitingList.add(p);
+                workingTasks--;
+            }
+        }
+        //CORE
         for (Core c : coreArray) {
-            if (c.update()) {
-                if(c.getCurrentProcess() != null){
-                    waitingList.add(c.getCurrentProcess());
-                }
-                if(!readyQueue.isEmpty()){
-                    c.setCurrentProcess(readyQueue.pop());
-                }
-                out.println("time up");
+            Process p = c.update();
+            if(p != null){
+                p.setLocation(ProcessLocation.WAITING);
+                out.println("CORE completion for process: " + p.PID + " at time: " + tick);
+                waitingList.add(p);
+                workingTasks--;
             }
         }
-        out.println(tick);
+        
+        changeCurrentTasks();
+        
+        //out.println(tick);
+        
+    }
+    
+    private static void changeCurrentTasks(){
+        for(Core c: coreArray){
+            if(c.isAvailable() && !readyQueue.isEmpty()){
+                Process p = readyQueue.pop();
+                p.setLocation(ProcessLocation.CORE);
+                c.setCurrentProcess(p);
+            }
+        }
         
     }
 
@@ -127,7 +176,8 @@ public class ProcesScheduling {
                 break;
             case "NEW":
                 out.println("NEW" + n);
-                Process p = new Process(n);
+                Process p = new Process(n,currentPID++);
+                processList.add(p);
                 waitingList.add(p);
                 break;
             case "CORE":
@@ -146,6 +196,47 @@ public class ProcesScheduling {
         
         
         }
+    }
+
+    private static void terminateProcess(Process p) {
+        out.println("CURRENT STATE OF THE SYSTEM AT t = " + tick + " ms:");
+        int busyCores = 0;
+        for(Core c: coreArray){
+            if(!c.isAvailable()){
+                busyCores++;
+            }
+        }
+        out.println("Current number of busy cores:" +  busyCores );
+        out.println("READY QUEUE:");
+        boolean readyQueueEmpty = true;
+        for(Process pr: readyQueue){
+            readyQueueEmpty = false;
+            out.println("Process: " + pr.PID);
+        }
+        out.println("DISK QUEUE:");
+        if(readyQueueEmpty){
+            out.println("Empty");
+        }
+        boolean diskQueueEmpty = true;
+        for(Process pr: diskQueue){
+            diskQueueEmpty = false;
+            out.println("Process: " + pr.PID);
+        }
+        if(diskQueueEmpty){
+            out.println("Empty");
+        }
+        out.println("PROCESS TABLE");
+        for(Process pr: processList){
+            out.print("Process " + pr.PID + " started at " + pr.getStartTime() + " ms and is ");
+            if(pr.getNextTask() == null){
+                out.println("TERMINATED");
+            }
+            else{
+                out.println("RUNNING");
+            }
+        }
+        out.println("\n\n\n\n");
+        
     }
     
 }
