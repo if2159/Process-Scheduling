@@ -24,6 +24,7 @@ public class ProcesScheduling {
     private static int tick = 0;
     private static int workingTasks = 1;
     private static int currentPID = 0;
+
     /**
      * @param args the command line arguments
      */
@@ -40,7 +41,7 @@ public class ProcesScheduling {
             out.println("File  Not Found.");
         }
         out.println("*************START*************");
-        while(workingTasks > 0 || !waitingList.isEmpty()){
+        while(stillWorking()|| !waitingList.isEmpty()){
             update();
             
             
@@ -50,8 +51,19 @@ public class ProcesScheduling {
         
     }
     
+    private static boolean stillWorking(){
+        for(Process p: processList){
+            if(p.getNextTask() != null){
+                return true;
+            }
+        }
+        return false;
+    }
+    
     
     private static void update(){
+        changeCurrentTasks();
+        //Empty WaitList
         for (int i = 0; i < waitingList.size(); i++){
             Process p = waitingList.get(i);
             //out.println(p);
@@ -87,9 +99,15 @@ public class ProcesScheduling {
                 }
             }
         }
+        
+        changeCurrentTasks();
+
+        
+        
         //DISK
         if(disk.isAvailable() && !diskQueue.isEmpty()){
             Process p = diskQueue.pop();
+            out.println("Process: " + p.PID + "got DISK at: " + tick + "for " + p.getNextTask().getTimeLeft());
             p.setLocation(ProcessLocation.DISK);
             disk.setCurrentProcess(p);
             
@@ -128,7 +146,10 @@ public class ProcesScheduling {
             }
         }
         
-        changeCurrentTasks();
+        
+        if(tick == 4448){
+            out.println("DEBUG");
+        }
         
         //out.println(tick);
         
@@ -245,19 +266,20 @@ public class ProcesScheduling {
                         out.println("RUNNING");
                         break;
                     case DISK:
-                        out.println("BLOCKED");
+                        out.println("BLOCKED - DISK");
                         break;
                     case DISPLAY:
-                        out.println("BLOCKED");
+                        out.println("BLOCKED - DISPLAY");
                         break;
                     case DISK_QUEUE:
                     case READY_QUEUE:
                     case WAITING:
                         out.println("READY");
                     break;
-                }
-            }
+                } 
+           }
         }
+        processList.remove(p);
         out.println("\n\n\n\n");
         
     }

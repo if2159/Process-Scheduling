@@ -31,4 +31,8 @@ public class Task {
         timeLeft--;
         return (timeLeft == 0);
     }
+    
+    public String toString(){
+        return "" + type + ": " + timeLeft;
+    }
 }

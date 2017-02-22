@@ -108,6 +108,14 @@ public class Process {
         return false;
     }
     public String toString(){
-        return "From Process PID = " + PID +"\n\tTasks:"+tasks.size();
+        StringBuilder s = new StringBuilder();
+        s.append("From Process PID = " + PID +"\n\tTasks:"+tasks.size());
+        for(int i = 0; i < tasks.size(); i++){
+            Task t = tasks.get(i);
+            s.append("\t");
+            s.append(t);
+        }
+        
+        return s.toString();
     }
 }
