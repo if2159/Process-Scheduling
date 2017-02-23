@@ -73,18 +73,18 @@ public class ProcesScheduling {
                     //out.println("TICK: " + tick);
                     switch (p.getNextTask().getType()) {
                         case CORE:
-                            if(p.PID == 0)out.println("CORE PID:" + p.PID);
+                            out.println("Process " + p.PID + " added to READY Queue");
                             readyQueue.add(p);
                             break;
                         case DISK:
-                            if(p.PID == 0)
-                            out.println("DISK PID:" + p.PID);
+                            
+                            out.println("Process " + p.PID + " added to DISK Queue");
                             diskQueue.add(p);
                             break;
                         case DISPLAY:
                         case INPUT:
                             //out.println("INPUT PID:" + p.PID);
-                            if(p.PID == 0)
+                            
                             out.println("BEGIN DISPLAY for PID: " + p.PID + "at TIME: " + tick);
                             p.setLocation(ProcessLocation.DISPLAY);
                             displayList.add(p);
@@ -106,17 +106,18 @@ public class ProcesScheduling {
     
     
     private static void update(){
+        changeCurrentTasks();
+        emptyWaitList();
+        changeCurrentTasks();
         updateDisk();
         updateDisplay();
         updateCore();
-        changeCurrentTasks();
-        emptyWaitList();
-        changeCurrentTasks();
+        
         
         
         emptyWaitList();
         changeCurrentTasks();
-        out.println(tick);
+        //out.println(tick);
         
     }
     
@@ -127,7 +128,7 @@ public class ProcesScheduling {
             if(p != null){
                 p.setLocation(ProcessLocation.WAITING);
                 c.setCurrentProcess(null);
-                if(p.PID == 0)
+                
                 out.println("CORE completion for process: " + p.PID + " at time: " + tick);
                 waitingList.add(p);
                 workingTasks--;
@@ -139,7 +140,7 @@ public class ProcesScheduling {
         for(int i = 0; i < displayList.size(); i++){
             Process p = displayList.get(i);
             if(p.update()){
-                if(p.PID == 0)
+                
                 out.println("DISPLAY completion for process: " + p.PID + " at time: " + tick);
                 displayList.remove(p);
                 waitingList.add(p);
@@ -155,19 +156,12 @@ public class ProcesScheduling {
         Process p = disk.update();
         if (p != null) {
             p.setLocation(ProcessLocation.WAITING);
-            if(p.PID == 0)
+            
             out.println("DISK completion for process: " + p.PID + " at time: " + tick);
             waitingList.add(p);
             workingTasks--;
         }
-        if(disk.isAvailable() && !diskQueue.isEmpty()){
-            p = diskQueue.pop();
-if(p.PID == 0)
-            out.println("Process: " + p.PID + "got DISK at: " + tick + "for " + p.getNextTask().getTimeLeft());
-            p.setLocation(ProcessLocation.DISK);
-            disk.setCurrentProcess(p);
-            
-        }
+        
 
     }
     
@@ -175,14 +169,22 @@ if(p.PID == 0)
         for(Core c: coreArray){
             if(c.isAvailable() && !readyQueue.isEmpty()){
                 Process p = readyQueue.pop();
-                if(p.PID == 0)out.println("Process " + p.PID + " got CORE at: " + tick);
+                out.println("Process " + p.PID + " got CORE at: " + tick);
                 p.setLocation(ProcessLocation.CORE);
                 c.setCurrentProcess(p);
             }
         }
         
+        if (disk.isAvailable() && !diskQueue.isEmpty()) {
+            Process p = diskQueue.pop();
+            
+                out.println("Process: " + p.PID + "got DISK at: " + tick + "for " + p.getNextTask().getTimeLeft());
+            p.setLocation(ProcessLocation.DISK);
+            disk.setCurrentProcess(p);
+
+        }
+        
     }
-//TODO Something is causing a blocked state or the processes in a core are set to waiting state. Unsure of whats happening
     private static void readFile() throws FileNotFoundException{
         out.println("Number:");
         //byte selection = (new Scanner(System.in)).nextByte();
@@ -197,7 +199,7 @@ if(p.PID == 0)
             default:
                 throw new FileNotFoundException("File number " + selection + " not found");
         }*/
-        fileIn = new Scanner(new File("input11.txt"));
+        fileIn = new Scanner(new File("input10.txt"));
         disk = new Disk();
         while(fileIn.hasNext()){
             String s = fileIn.next();
