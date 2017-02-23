@@ -29,7 +29,7 @@ public class Task {
      */
     public boolean update(){
         timeLeft--;
-        return (timeLeft == 0);
+        return (timeLeft <= 0);
     }
     
     public String toString(){

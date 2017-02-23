@@ -1,0 +1,14 @@
+
+
+CURRENT STATE OF THE SYSTEM AT t = 4591 ms:
+Current number of busy cores:0
+READY QUEUE:
+Empty
+DISK QUEUE:
+Empty
+PROCESS TABLE
+Process 0 started at 0 ms and is TERMINATED
+
+
+
+

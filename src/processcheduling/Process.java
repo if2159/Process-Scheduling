@@ -31,9 +31,9 @@ public class Process {
     }
     
     public void addTask(Task t){
-        if(!(t.getType() == TaskType.DISK && t.getTimeLeft() == 0)){
+        //if(!(t.getType() == TaskType.DISK && t.getTimeLeft() == 0)){
             tasks.add(t);
-        }
+        //}
     }
     
     public int getStartTime(){
