@@ -186,19 +186,7 @@ public class ProcesScheduling {
         
     }
     private static void readFile() throws FileNotFoundException{
-        out.println("Number:");
-        //byte selection = (new Scanner(System.in)).nextByte();
         Scanner fileIn;
-        /*switch(selection){
-            case 0:
-                fileIn = new Scanner(new File("input10.txt"));
-                break;
-            case 1:
-                fileIn = new Scanner(new File("input11.txt"));
-                break;
-            default:
-                throw new FileNotFoundException("File number " + selection + " not found");
-        }*/
         fileIn = new Scanner(new File("input10.txt"));
         disk = new Disk();
         while(fileIn.hasNext()){
